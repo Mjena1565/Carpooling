@@ -21,7 +21,7 @@ class DriverService {
     try {
       debugPrint('[DriverService] Initializing Firebase...');
       final app = Firebase.app();
-      _db = FirebaseFirestore.instanceFor(app: app, /* databaseId: 'carpoolingv1' */);
+      _db = FirebaseFirestore.instanceFor(app: app,  databaseId: 'carpool' );
       _auth = FirebaseAuth.instanceFor(app: app);
       _db.settings = const Settings(persistenceEnabled: true);
       

@@ -47,7 +47,7 @@ class _SignupScreenState extends State<SignupScreen> {
    try {
      final namedDb = FirebaseFirestore.instanceFor(
      app: Firebase.app(),
-     // databaseId: 'carpoolingv1',
+     databaseId: 'carpool',
     );
     final querySnapshot = await namedDb.collection('users')
       .where('employeeId', isEqualTo: employeeId)
@@ -104,7 +104,7 @@ class _SignupScreenState extends State<SignupScreen> {
         // 2. Save the additional user data to Firestore
         var namedDb = FirebaseFirestore.instanceFor(
           app: Firebase.app(),
-          // databaseId: 'carpoolingv1',
+          databaseId: 'carpool',
         );
         print('--- Saving additional user data to Firestore for UID: ${user.uid} ---'); 
         await namedDb.collection('users').doc(user.uid).set({
@@ -117,20 +117,17 @@ class _SignupScreenState extends State<SignupScreen> {
         });
         print('--- User data saved to Firestore successfully ---');
         
-        // await user.sendEmailVerification(); 
-        // print('--- Verification email sent ---'); 
+        await user.sendEmailVerification(); 
+        print('--- Verification email sent ---'); 
       }
 
       if (!mounted) return;
       //  for now no navigation to emailVerifciationScreen
-      // Navigator.pushReplacement(
-      //   context,
-      //   MaterialPageRoute(builder: (context) => const EmailVerificationScreen()),
-      // );
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const LoginAuthScreen()),
+        MaterialPageRoute(builder: (context) => const EmailVerificationScreen()),
       );
+     
 
     } on FirebaseAuthException catch (e) {
       String message;

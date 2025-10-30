@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instanceFor(
     app: Firebase.app(),
-    // databaseId: 'carpoolingv1',
+    databaseId: 'carpool',
   );
   final FirebaseAuth _auth = FirebaseAuth.instance;
 

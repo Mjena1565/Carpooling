@@ -14,7 +14,7 @@ import 'change_password_screen.dart';
 // Get a named instance of Firestore
 final FirebaseFirestore carpoolingFirestore = FirebaseFirestore.instanceFor(
   app: Firebase.app(),
-  // databaseId: 'carpoolingv1',
+  databaseId: 'carpool',
 );
 
 class HomeScreen extends StatefulWidget {
@@ -662,74 +662,81 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 30),
-          GridView.count(
-            crossAxisCount: 2,
-            crossAxisSpacing: 15,
-            mainAxisSpacing: 15,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            children: [
-              _buildFeatureGridItem(
-                context,
-                icon: Icons.map,
-                iconColor: Colors.teal,
-                title: "Optimized Routes",
-                description: "Efficient routes to minimize travel time.",
-                onTap: () {
-                  print('DEBUG: Tapped on "Optimized Routes" feature.');
-                },
-              ),
-              _buildFeatureGridItem(
-                context,
-                icon: Icons.people_alt,
-                iconColor: Colors.indigo,
-                title: "Smart Matching",
-                description: "Connect with ideal drivers or companions.",
-                onTap: () {
-                  print('DEBUG: Tapped on "Smart Matching" feature.');
-                },
-              ),
-              _buildFeatureGridItem(
-                context,
-                icon: Icons.eco,
-                iconColor: Colors.green,
-                title: "Eco Commutes",
-                description: "Reduce your carbon footprint by sharing rides.",
-                onTap: () {
-                  print('DEBUG: Tapped on "Eco Commutes" feature.');
-                },
-              ),
-              _buildFeatureGridItem(
-                context,
-                icon: Icons.access_time,
-                iconColor: Colors.deepOrange,
-                title: "Time Efficiency",
-                description: "Streamlined processes for quick ride coordination.",
-                onTap: () {
-                  print('DEBUG: Tapped on "Time Efficiency" feature.');
-                },
-              ),
-              _buildFeatureGridItem(
-                context,
-                icon: Icons.security,
-                iconColor: Colors.blueGrey,
-                title: "Secure & Safe",
-                description: "Ensuring a safe and reliable carpooling environment.",
-                onTap: () {
-                  print('DEBUG: Tapped on "Secure & Safe" feature.');
-                },
-              ),
-              _buildFeatureGridItem(
-                context,
-                icon: Icons.chat,
-                iconColor: Theme.of(context).colorScheme.secondary,
-                title: "In-App Chat",
-                description: "Communicate seamlessly with your ride partners.",
-                onTap: () {
-                  print('DEBUG: Tapped on "In-App Chat" feature.');
-                },
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final double itemWidth = (constraints.maxWidth - 15) / 2;
+              final double itemHeight = itemWidth * 1.25;
+              return GridView.count(
+                crossAxisCount: 2,
+                crossAxisSpacing: 15,
+                mainAxisSpacing: 15,
+                childAspectRatio: itemWidth / itemHeight,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                children: [
+                  _buildFeatureGridItem(
+                    context,
+                    icon: Icons.map,
+                    iconColor: Colors.teal,
+                    title: "Optimized Routes",
+                    description: "Efficient routes to minimize travel time.",
+                    onTap: () {
+                      print('DEBUG: Tapped on "Optimized Routes" feature.');
+                    },
+                  ),
+                  _buildFeatureGridItem(
+                    context,
+                    icon: Icons.people_alt,
+                    iconColor: Colors.indigo,
+                    title: "Smart Matching",
+                    description: "Connect with ideal drivers or companions.",
+                    onTap: () {
+                      print('DEBUG: Tapped on "Smart Matching" feature.');
+                    },
+                  ),
+                  _buildFeatureGridItem(
+                    context,
+                    icon: Icons.eco,
+                    iconColor: Colors.green,
+                    title: "Eco Commutes",
+                    description: "Reduce your carbon footprint by sharing rides.",
+                    onTap: () {
+                      print('DEBUG: Tapped on "Eco Commutes" feature.');
+                    },
+                  ),
+                  _buildFeatureGridItem(
+                    context,
+                    icon: Icons.access_time,
+                    iconColor: Colors.deepOrange,
+                    title: "Time Efficiency",
+                    description: "Streamlined processes for quick ride coordination.",
+                    onTap: () {
+                      print('DEBUG: Tapped on "Time Efficiency" feature.');
+                    },
+                  ),
+                  _buildFeatureGridItem(
+                    context,
+                    icon: Icons.security,
+                    iconColor: Colors.blueGrey,
+                    title: "Secure & Safe",
+                    description: "Ensuring a safe and reliable carpooling environment.",
+                    onTap: () {
+                      print('DEBUG: Tapped on "Secure & Safe" feature.');
+                    },
+                  ),
+                  _buildFeatureGridItem(
+                    context,
+                    icon: Icons.chat,
+                    iconColor: Theme.of(context).colorScheme.secondary,
+                    title: "In-App Chat",
+                    description: "Communicate seamlessly with your ride partners.",
+                    onTap: () {
+                      print('DEBUG: Tapped on "In-App Chat" feature.');
+                    },
+                  ),
+                ],
+              );
+            },
           ),
           const SizedBox(height: 30),
           Text(

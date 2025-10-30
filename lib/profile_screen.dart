@@ -38,7 +38,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instanceFor(
     app: Firebase.app(),
-    // databaseId: 'carpoolingv1',
+    databaseId: 'carpool',
   );
   final FirebaseAuth _auth = FirebaseAuth.instance;
 

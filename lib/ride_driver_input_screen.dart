@@ -730,12 +730,17 @@ class _RideDriverInputScreenState extends State<RideDriverInputScreen> with Sing
                   fillColor: Colors.white,
                   contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
                 ),
+                isExpanded: true,
                 items: _userDriverProfiles.map<DropdownMenuItem<String>>((profile) {
+                  final String carModel = profile['car_model'] ?? 'Unknown';
+                  final String displayText = '${carModel.length > 15 ? '${carModel.substring(0, 15)}...' : carModel} - ${profile['seat_capacity']} seats';
+                  
                   return DropdownMenuItem<String>(
                     value: profile['id'],
                     child: Text(
-                      '${(profile['car_model'] as String).length > 8 ? '${(profile['car_model'] as String).substring(0, 8)}...' : profile['car_model']} - ${profile['seat_capacity']} seats',
+                      displayText,
                       overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   );
                 }).toList(),
