@@ -19,7 +19,8 @@ class DriverOfferDetailScreen extends StatefulWidget {
   });
 
   @override
-  State<DriverOfferDetailScreen> createState() => _DriverOfferDetailScreenState();
+  State<DriverOfferDetailScreen> createState() =>
+      _DriverOfferDetailScreenState();
 }
 
 class _DriverOfferDetailScreenState extends State<DriverOfferDetailScreen> {
@@ -37,43 +38,50 @@ class _DriverOfferDetailScreenState extends State<DriverOfferDetailScreen> {
   }
 
   void _listenForOfferUpdates() {
-    driverService.getDriverOfferStream(widget.driverInputId).listen((offerData) {
-      if (!mounted) return;
-      if (offerData != null) {
-        // Create a safe, mutable copy of the data to perform type conversions.
-        final safeOfferData = Map<String, dynamic>.from(offerData);
+    driverService
+        .getDriverOfferStream(widget.driverInputId)
+        .listen(
+          (offerData) {
+            if (!mounted) return;
+            if (offerData != null) {
+              // Create a safe, mutable copy of the data to perform type conversions.
+              final safeOfferData = Map<String, dynamic>.from(offerData);
 
-        // Safely convert potential String timestamps to Timestamp objects.
-        // This prevents the 'String' is not a subtype of 'Timestamp' error.
-        void convertStringToTimestamp(String key) {
-          final value = safeOfferData[key];
-          if (value is String) {
-            final dateTime = DateTime.tryParse(value);
-            if (dateTime != null) {
-              safeOfferData[key] = Timestamp.fromDate(dateTime);
+              // Safely convert potential String timestamps to Timestamp objects.
+              // This prevents the 'String' is not a subtype of 'Timestamp' error.
+              void convertStringToTimestamp(String key) {
+                final value = safeOfferData[key];
+                if (value is String) {
+                  final dateTime = DateTime.tryParse(value);
+                  if (dateTime != null) {
+                    safeOfferData[key] = Timestamp.fromDate(dateTime);
+                  } else {
+                    safeOfferData[key] = null;
+                  }
+                }
+              }
+
+              convertStringToTimestamp('scheduled_time');
+              convertStringToTimestamp('created_at');
+
+              setState(() {
+                _driverOfferDetails = safeOfferData;
+                _isLoading = false;
+              });
             } else {
-              safeOfferData[key] = null;
+              _showErrorAndNavigateBack(
+                "The ride offer was not found or has been completed/cancelled.",
+              );
             }
-          }
-        }
-
-        convertStringToTimestamp('scheduled_time');
-        convertStringToTimestamp('created_at');
-
-        setState(() {
-          _driverOfferDetails = safeOfferData;
-          _isLoading = false;
-        });
-      } else {
-        _showErrorAndNavigateBack("The ride offer was not found or has been completed/cancelled.");
-      }
-    }, onError: (e) {
-      if (!mounted) return;
-      setState(() {
-        _errorMessage = 'Failed to load offer details. Please try again.';
-        _isLoading = false;
-      });
-    });
+          },
+          onError: (e) {
+            if (!mounted) return;
+            setState(() {
+              _errorMessage = 'Failed to load offer details. Please try again.';
+              _isLoading = false;
+            });
+          },
+        );
   }
 
   Future<void> _fetchDriverProfile() async {
@@ -84,7 +92,10 @@ class _DriverOfferDetailScreenState extends State<DriverOfferDetailScreen> {
         final profile = await driverService.getDriverProfileById(driverId);
         if (profile.exists) {
           setState(() {
-            _driverProfile = {'id': profile.id, ...profile.data() as Map<String, dynamic>};
+            _driverProfile = {
+              'id': profile.id,
+              ...profile.data() as Map<String, dynamic>,
+            };
           });
         }
       } catch (e) {
@@ -104,8 +115,8 @@ class _DriverOfferDetailScreenState extends State<DriverOfferDetailScreen> {
     });
 
     try {
-      final List<Map<String, dynamic>> matchingRiders =
-          await driverService.findMatchingRiders(_driverOfferDetails);
+      final List<Map<String, dynamic>> matchingRiders = await driverService
+          .findMatchingRiders(_driverOfferDetails);
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -118,11 +129,12 @@ class _DriverOfferDetailScreenState extends State<DriverOfferDetailScreen> {
       final bool isRideLater = _driverOfferDetails['scheduled_time'] != null;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (context) => MapDriverScreen(
-            title: "Matching Results",
-            responseData: jsonEncode({'matches': matchingRiders}),
-            isRideLater: isRideLater,
-          ),
+          builder:
+              (context) => MapDriverScreen(
+                title: "Matching Results",
+                responseData: jsonEncode({'matches': matchingRiders}),
+                isRideLater: isRideLater,
+              ),
         ),
       );
     } catch (e) {
@@ -139,26 +151,39 @@ class _DriverOfferDetailScreenState extends State<DriverOfferDetailScreen> {
   }
 
   Future<void> _cancelRideOffer() async {
-    final bool confirm = await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Confirm Cancellation', style: TextStyle(color: Colors.red)),
-          content: const Text('Are you sure you want to cancel this ride offer? This cannot be undone.'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text('No', style: TextStyle(color: Theme.of(context).primaryColor)),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
-              child: const Text('Yes, Cancel'),
-            ),
-          ],
-        );
-      },
-    ) ?? false;
+    final bool confirm =
+        await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text(
+                'Confirm Cancellation',
+                style: TextStyle(color: Colors.red),
+              ),
+              content: const Text(
+                'Are you sure you want to cancel this ride offer? This cannot be undone.',
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text(
+                    'No',
+                    style: TextStyle(color: Theme.of(context).primaryColor),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Yes, Cancel'),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
 
     if (!confirm) {
       return;
@@ -174,7 +199,10 @@ class _DriverOfferDetailScreenState extends State<DriverOfferDetailScreen> {
       await driverService.cancelDriverOffer(widget.driverInputId);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ride offer cancelled successfully!'), backgroundColor: Colors.green),
+        const SnackBar(
+          content: Text('Ride offer cancelled successfully!'),
+          backgroundColor: Colors.green,
+        ),
       );
       widget.onOfferCancelled?.call();
       Navigator.of(context).pop();
@@ -210,7 +238,13 @@ class _DriverOfferDetailScreenState extends State<DriverOfferDetailScreen> {
     }
   }
 
-  Widget _buildDetailRow(BuildContext context, String label, String value, IconData icon, {Color? valueColor}) {
+  Widget _buildDetailRow(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon, {
+    Color? valueColor,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -220,13 +254,17 @@ class _DriverOfferDetailScreenState extends State<DriverOfferDetailScreen> {
           const SizedBox(width: 10),
           Text(
             label,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               value,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: valueColor),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: valueColor),
               textAlign: TextAlign.end,
             ),
           ),
@@ -238,215 +276,269 @@ class _DriverOfferDetailScreenState extends State<DriverOfferDetailScreen> {
   @override
   Widget build(BuildContext context) {
     debugPrint('Driver Offer Details: $_driverOfferDetails');
-    
 
     final bool isRideLater = _driverOfferDetails['scheduled_time'] != null;
     final bool isCancelledOrCompleted =
-        _driverOfferDetails['status'] == 'cancelled' || _driverOfferDetails['status'] == 'completed';
+        _driverOfferDetails['status'] == 'cancelled' ||
+        _driverOfferDetails['status'] == 'completed';
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isRideLater ? "Scheduled Ride Offer" : "Your Ride Offer",
-            style: const TextStyle(color: Colors.white)),
+        title: Text(
+          isRideLater ? "Scheduled Ride Offer" : "Your Ride Offer",
+          style: const TextStyle(color: Colors.white),
+        ),
         backgroundColor: Theme.of(context).primaryColor,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       backgroundColor: Colors.grey[50],
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: Theme.of(context).primaryColor))
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    isRideLater ? "Your ride has been scheduled!" : "Your ride offer has been created!",
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor,
-                        ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 20),
-                  if (_errorMessage != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 20.0),
-                      child: Card(
-                        color: Colors.red.withOpacity(0.08),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.0),
-                          side: const BorderSide(color: Colors.red, width: 1.0),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.error_outline, color: Colors.red, size: 24),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  _errorMessage!,
-                                  style: const TextStyle(color: Colors.red, fontSize: 14),
-                                  textAlign: TextAlign.left,
+      body:
+          _isLoading
+              ? Center(
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).primaryColor,
+                ),
+              )
+              : SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      isRideLater
+                          ? "Your ride has been scheduled!"
+                          : "Your ride offer has been created!",
+                      style: Theme.of(
+                        context,
+                      ).textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    if (_errorMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 20.0),
+                        child: Card(
+                          color: Colors.red.withOpacity(0.08),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                            side: const BorderSide(
+                              color: Colors.red,
+                              width: 1.0,
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.error_outline,
+                                  color: Colors.red,
+                                  size: 24,
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    _errorMessage!,
+                                    style: const TextStyle(
+                                      color: Colors.red,
+                                      fontSize: 14,
+                                    ),
+                                    textAlign: TextAlign.left,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
-                    margin: const EdgeInsets.symmetric(vertical: 10),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Offer Details",
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).colorScheme.secondary,
+                    Card(
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15.0),
+                      ),
+                      margin: const EdgeInsets.symmetric(vertical: 10),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Offer Details",
+                              style: Theme.of(
+                                context,
+                              ).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.secondary,
+                              ),
+                            ),
+                            const Divider(height: 20, thickness: 1),
+                            _buildDetailRow(
+                              context,
+                              "Status:",
+                              _driverOfferDetails['status']
+                                      ?.toString()
+                                      .toUpperCase() ??
+                                  'N/A',
+                              Icons.info_outline,
+                              valueColor:
+                                  isCancelledOrCompleted
+                                      ? Colors.red
+                                      : Colors.green,
+                            ),
+                            _buildDetailRow(
+                              context,
+                              "Location:",
+                              _driverOfferDetails['location'] ?? 'N/A',
+                              Icons.location_on,
+                            ),
+                            _buildDetailRow(
+                              context,
+                              "Direction:",
+                              _driverOfferDetails['office_direction'] == true
+                                  ? 'To Office'
+                                  : 'From Office',
+                              _driverOfferDetails['office_direction'] == true
+                                  ? Icons.arrow_circle_right
+                                  : Icons.arrow_circle_left,
+                            ),
+                            _buildDetailRow(
+                              context,
+                              "Available_seats:",
+                              (_driverOfferDetails['available_seats'] ?? 0)
+                                  .toString(),
+                              Icons.people,
+                            ),
+                            if (isRideLater)
+                              _buildDetailRow(
+                                context,
+                                "Scheduled Time:",
+                                _formatDateTime(
+                                  _driverOfferDetails['scheduled_time']
+                                      as Timestamp?,
                                 ),
-                          ),
-                          const Divider(height: 20, thickness: 1),
-                          _buildDetailRow(
-                            context,
-                            "Status:",
-                            _driverOfferDetails['status']?.toString().toUpperCase() ?? 'N/A',
-                            Icons.info_outline,
-                            valueColor: isCancelledOrCompleted ? Colors.red : Colors.green,
-                          ),
-                          _buildDetailRow(
-                            context,
-                            "Location:",
-                            _driverOfferDetails['location'] ?? 'N/A',
-                            Icons.location_on,
-                          ),
-                          _buildDetailRow(
-                            context,
-                            "Direction:",
-                            _driverOfferDetails['office_direction'] == true ? 'To Office' : 'From Office',
-                            _driverOfferDetails['office_direction'] == true
-                                ? Icons.arrow_circle_right
-                                : Icons.arrow_circle_left,
-                          ),
-                          _buildDetailRow(
-                            context,
-                            "Companions Occupied:",
-                            (_driverOfferDetails['companions_occupied'] ?? 0).toString(),
-                            Icons.people,
-                          ),
-                          if (isRideLater)
-                            _buildDetailRow(
-                              context,
-                              "Scheduled Time:",
-                              _formatDateTime(_driverOfferDetails['scheduled_time'] as Timestamp?),
-                              Icons.schedule,
+                                Icons.schedule,
+                              ),
+                            if (!isRideLater &&
+                                _driverOfferDetails['created_at'] != null)
+                              _buildDetailRow(
+                                context,
+                                "Created At:",
+                                _formatDateTime(
+                                  _driverOfferDetails['created_at']
+                                      as Timestamp?,
+                                ),
+                                Icons.access_time,
+                              ),
+                            const SizedBox(height: 10),
+                            Text(
+                              "Driver Profile:",
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.bold),
                             ),
-                          if (!isRideLater && _driverOfferDetails['created_at'] != null)
-                            _buildDetailRow(
-                              context,
-                              "Created At:",
-                              _formatDateTime(_driverOfferDetails['created_at'] as Timestamp?),
-                              Icons.access_time,
+                            // Use a FutureBuilder to handle the async data fetching
+                            FutureBuilder<Map<String, dynamic>?>(
+                              future: Future.value(_driverProfile),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const CircularProgressIndicator();
+                                } else if (snapshot.hasError ||
+                                    snapshot.data == null) {
+                                  return _buildDetailRow(
+                                    context,
+                                    'Driver Profile:',
+                                    'N/A (Details unavailable)',
+                                    Icons.person_off,
+                                  );
+                                } else {
+                                  final profile = snapshot.data!;
+                                  return Column(
+                                    children: [
+                                      _buildDetailRow(
+                                        context,
+                                        "Car Model:",
+                                        profile['car_model'] ?? 'N/A',
+                                        Icons.directions_car,
+                                      ),
+                                      _buildDetailRow(
+                                        context,
+                                        "Plate Number:",
+                                        profile['license_plate'] ?? 'N/A',
+                                        Icons.tag,
+                                      ),
+                                      _buildDetailRow(
+                                        context,
+                                        "Seat Capacity:",
+                                        (profile['seat_capacity'] ?? 'N/A')
+                                            .toString(),
+                                        Icons.event_seat,
+                                      ),
+                                    ],
+                                  );
+                                }
+                              },
                             ),
-                          const SizedBox(height: 10),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    if (!isCancelledOrCompleted) ...[
+                      CustomButton(
+                        text:
+                            isRideLater
+                                ? "View Scheduled Offers"
+                                : "Find Companions Now!",
+                        onPressed: _isLoading ? null : _matchDriver,
+                        isLoading: _isLoading,
+                        icon: Icons.search,
+                        buttonColor: Theme.of(context).primaryColor,
+                      ),
+                      const SizedBox(height: 15),
+                      CustomButton(
+                        text:
+                            _isLoading ? "Cancelling..." : "Cancel Ride Offer",
+                        onPressed: _isLoading ? null : _cancelRideOffer,
+                        buttonColor: Colors.redAccent,
+                        icon: Icons.cancel,
+                      ),
+                      const SizedBox(height: 15),
+                    ],
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueGrey,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                        elevation: 3,
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.arrow_back, size: 24),
+                          SizedBox(width: 8),
                           Text(
-                            "Driver Profile:",
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                          // Use a FutureBuilder to handle the async data fetching
-                          FutureBuilder<Map<String, dynamic>?>(
-                            future: Future.value(_driverProfile),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                return const CircularProgressIndicator();
-                              } else if (snapshot.hasError || snapshot.data == null) {
-                                return _buildDetailRow(context, 'Driver Profile:', 'N/A (Details unavailable)', Icons.person_off);
-                              } else {
-                                final profile = snapshot.data!;
-                                return Column(
-                                  children: [
-                                    _buildDetailRow(
-                                      context,
-                                      "Car Model:",
-                                      profile['car_model'] ?? 'N/A',
-                                      Icons.directions_car,
-                                    ),
-                                    _buildDetailRow(
-                                      context,
-                                      "Plate Number:",
-                                      profile['license_plate'] ?? 'N/A',
-                                      Icons.tag,
-                                    ),
-                                    _buildDetailRow(
-                                      context,
-                                      "Seat Capacity:",
-                                      (profile['seat_capacity'] ?? 'N/A').toString(),
-                                      Icons.event_seat,
-                                    ),
-                                  ],
-                                );
-                              }
-                            },
+                            "Go Back",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 30),
-                  if (!isCancelledOrCompleted) ...[
-                    CustomButton(
-                      text: isRideLater ? "View Scheduled Offers" : "Find Companions Now!",
-                      onPressed: _isLoading ? null : _matchDriver,
-                      isLoading: _isLoading,
-                      icon: Icons.search,
-                      buttonColor: Theme.of(context).primaryColor,
-                    ),
-                    const SizedBox(height: 15),
-                    CustomButton(
-                      text: _isLoading ? "Cancelling..." : "Cancel Ride Offer",
-                      onPressed: _isLoading ? null : _cancelRideOffer,
-                      buttonColor: Colors.redAccent,
-                      icon: Icons.cancel,
-                    ),
-                    const SizedBox(height: 15),
                   ],
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueGrey,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                      ),
-                      elevation: 3,
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.arrow_back, size: 24),
-                        SizedBox(width: 8),
-                        Text(
-                          "Go Back",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
     );
   }
 }

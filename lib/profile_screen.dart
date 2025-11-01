@@ -38,7 +38,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instanceFor(
     app: Firebase.app(),
-    databaseId: 'carpool',
+    databaseId: '(default)',
   );
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -90,7 +90,7 @@ class _ProfilePageState extends State<ProfilePage> {
         _originalPhone = _phoneController.text;
         _originalEmployeeId = _employeeIdController.text;
         _originalAddress = _addressController.text;
-        
+
         // Retrieve and check edit count
         final lastEditDate = (userData['lastEditDate'] as Timestamp?)?.toDate();
         final now = DateTime.now();
@@ -164,7 +164,8 @@ class _ProfilePageState extends State<ProfilePage> {
     if (_editsToday >= _maxDailyEdits) {
       if (mounted) {
         setState(() {
-          _errorMessage = "You have reached your daily limit of $_maxDailyEdits profile edits.";
+          _errorMessage =
+              "You have reached your daily limit of $_maxDailyEdits profile edits.";
           _isSaving = false;
         });
       }
@@ -196,20 +197,24 @@ class _ProfilePageState extends State<ProfilePage> {
     try {
       // Increment the edit counter and update the timestamp within the same transaction
       await _firestore.runTransaction((transaction) async {
-        final docSnapshot = await transaction.get(_firestore.collection('users').doc(user.uid));
-        
+        final docSnapshot = await transaction.get(
+          _firestore.collection('users').doc(user.uid),
+        );
+
         if (!docSnapshot.exists) {
           throw Exception("User document does not exist!");
         }
-        
+
         final userData = docSnapshot.data()!;
         final currentEdits = userData['editsToday'] ?? 0;
-        final lastEditTimestamp = (userData['lastEditDate'] as Timestamp?)?.toDate();
+        final lastEditTimestamp =
+            (userData['lastEditDate'] as Timestamp?)?.toDate();
         final now = DateTime.now();
-        
+
         int newEdits = currentEdits;
-        
-        if (lastEditTimestamp == null || !DateUtils.isSameDay(lastEditTimestamp, now)) {
+
+        if (lastEditTimestamp == null ||
+            !DateUtils.isSameDay(lastEditTimestamp, now)) {
           // Reset edits if it's a new day
           newEdits = 1;
         } else {
@@ -218,20 +223,19 @@ class _ProfilePageState extends State<ProfilePage> {
         }
 
         if (newEdits > _maxDailyEdits) {
-          throw Exception("Daily edit limit exceeded. New edits count: $newEdits");
+          throw Exception(
+            "Daily edit limit exceeded. New edits count: $newEdits",
+          );
         }
-        
+
         // Update the document with new data and the incremented counter
-        transaction.update(
-          _firestore.collection('users').doc(user.uid),
-          {
-            ...updateData,
-            'editsToday': newEdits,
-            'lastEditDate': FieldValue.serverTimestamp(),
-          },
-        );
+        transaction.update(_firestore.collection('users').doc(user.uid), {
+          ...updateData,
+          'editsToday': newEdits,
+          'lastEditDate': FieldValue.serverTimestamp(),
+        });
       });
-      
+
       // Update local state on success
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -240,13 +244,12 @@ class _ProfilePageState extends State<ProfilePage> {
         _originalName = _nameController.text;
         _originalPhone = _phoneController.text;
         _originalAddress = _addressController.text;
-        
+
         setState(() {
-          _editsToday++; 
+          _editsToday++;
           _isEditing = false;
         });
       }
-
     } on FirebaseException catch (e) {
       if (mounted) {
         setState(() {
@@ -256,9 +259,10 @@ class _ProfilePageState extends State<ProfilePage> {
     } catch (e) {
       if (e.toString().contains("Daily edit limit exceeded")) {
         if (mounted) {
-           setState(() {
-            _errorMessage = "You have reached your daily limit of $_maxDailyEdits profile edits.";
-           });
+          setState(() {
+            _errorMessage =
+                "You have reached your daily limit of $_maxDailyEdits profile edits.";
+          });
         }
       } else {
         if (mounted) {
@@ -315,36 +319,46 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         enabledInEditMode
             ? CustomTextField(
-                controller: controller,
-                label: '',
-                hintText: 'Enter your $label',
-                enabled: true,
-                keyboardType: keyboardType,
-                contentPadding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 16.0),
-              )
+              controller: controller,
+              label: '',
+              hintText: 'Enter your $label',
+              enabled: true,
+              keyboardType: keyboardType,
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 14.0,
+                horizontal: 16.0,
+              ),
+            )
             : Card(
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: Colors.grey.shade300, width: 1),
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: Colors.grey.shade300, width: 1),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 16.0,
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-                  child: Row(
-                    children: [
-                      Icon(icon, color: Theme.of(context).colorScheme.primary, size: 24),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Text(
-                          controller.text.isEmpty ? 'N/A' : controller.text,
-                          style: TextStyle(fontSize: 16, color: Colors.grey[800]),
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                child: Row(
+                  children: [
+                    Icon(
+                      icon,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                        controller.text.isEmpty ? 'N/A' : controller.text,
+                        style: TextStyle(fontSize: 16, color: Colors.grey[800]),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
+            ),
         const SizedBox(height: 20),
       ],
     );
@@ -354,7 +368,10 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("User Profile", style: TextStyle(color: Colors.white)),
+        title: const Text(
+          "User Profile",
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: Theme.of(context).primaryColor,
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
@@ -369,142 +386,163 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 20),
-                  Center(
-                    child: Column(
-                      children: [
-                        CircleAvatar(
-                          radius: 70,
-                          backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
-                          child: Icon(
-                            Icons.person,
-                            size: 70,
-                            color: Theme.of(context).primaryColor,
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 20),
+                    Center(
+                      child: Column(
+                        children: [
+                          CircleAvatar(
+                            radius: 70,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).primaryColor.withOpacity(0.1),
+                            child: Icon(
+                              Icons.person,
+                              size: 70,
+                              color: Theme.of(context).primaryColor,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 20),
-                        Text(
-                          _nameController.text.isEmpty ? "No Name Provided" : _nameController.text,
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.onSurface,
+                          const SizedBox(height: 20),
+                          Text(
+                            _nameController.text.isEmpty
+                                ? "No Name Provided"
+                                : _nameController.text,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(
+                              context,
+                            ).textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _phoneController.text.isEmpty ? "Phone Number Not Available" : _phoneController.text,
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Colors.grey[600],
+                          const SizedBox(height: 8),
+                          Text(
+                            _phoneController.text.isEmpty
+                                ? "Phone Number Not Available"
+                                : _phoneController.text,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(color: Colors.grey[600]),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 40),
-                  _buildProfileDisplayField(
-                    label: "Name",
-                    controller: _nameController,
-                    icon: Icons.person_outline,
-                    isEditing: _isEditing,
-                  ),
-                  _buildProfileDisplayField(
-                    label: "Employee ID",
-                    controller: _employeeIdController,
-                    icon: Icons.badge_outlined,
-                    isEditing: _isEditing,
-                    isEditable: false,
-                  ),
-                  _buildProfileDisplayField(
-                    label: "Mobile Number",
-                    controller: _phoneController,
-                    icon: Icons.phone,
-                    isEditing: _isEditing,
-                    keyboardType: TextInputType.number,
-                  ),
-                  _buildProfileDisplayField(
-                    label: "Address",
-                    controller: _addressController,
-                    icon: Icons.location_on_outlined,
-                    isEditing: _isEditing,
-                  ),
-                  if (_errorMessage != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 20.0),
-                      child: Card(
-                        color: Colors.red.withOpacity(0.08),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.0),
-                          side: const BorderSide(color: Colors.red, width: 1.0),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.error_outline, color: Colors.red, size: 24),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  _errorMessage!,
-                                  style: const TextStyle(color: Colors.red, fontSize: 14),
-                                  textAlign: TextAlign.left,
+                    const SizedBox(height: 40),
+                    _buildProfileDisplayField(
+                      label: "Name",
+                      controller: _nameController,
+                      icon: Icons.person_outline,
+                      isEditing: _isEditing,
+                    ),
+                    _buildProfileDisplayField(
+                      label: "Employee ID",
+                      controller: _employeeIdController,
+                      icon: Icons.badge_outlined,
+                      isEditing: _isEditing,
+                      isEditable: false,
+                    ),
+                    _buildProfileDisplayField(
+                      label: "Mobile Number",
+                      controller: _phoneController,
+                      icon: Icons.phone,
+                      isEditing: _isEditing,
+                      keyboardType: TextInputType.number,
+                    ),
+                    _buildProfileDisplayField(
+                      label: "Address",
+                      controller: _addressController,
+                      icon: Icons.location_on_outlined,
+                      isEditing: _isEditing,
+                    ),
+                    if (_errorMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 20.0),
+                        child: Card(
+                          color: Colors.red.withOpacity(0.08),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                            side: const BorderSide(
+                              color: Colors.red,
+                              width: 1.0,
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.error_outline,
+                                  color: Colors.red,
+                                  size: 24,
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    _errorMessage!,
+                                    style: const TextStyle(
+                                      color: Colors.red,
+                                      fontSize: 14,
+                                    ),
+                                    textAlign: TextAlign.left,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
+                    const SizedBox(height: 20),
+                    Text(
+                      "You have $_editsToday out of $_maxDailyEdits edits used today.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color:
+                            _editsToday >= _maxDailyEdits
+                                ? Colors.red
+                                : Colors.green,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  const SizedBox(height: 20),
-                  Text(
-                    "You have $_editsToday out of $_maxDailyEdits edits used today.",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: _editsToday >= _maxDailyEdits ? Colors.red : Colors.green,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  if (_isEditing)
-                    Column(
-                      children: [
-                        CustomButton(
-                          text: "Save Changes",
-                          onPressed: _isSaving ? null : _updateUserProfile,
-                          isLoading: _isSaving,
-                          icon: Icons.save,
-                        ),
-                        const SizedBox(height: 15),
-                        CustomButton(
-                          text: "Cancel",
-                          onPressed: _isSaving ? null : _toggleEditMode,
-                          buttonColor: Colors.grey.shade600,
-                          icon: Icons.cancel,
-                        ),
-                      ],
-                    )
-                  else
-                    CustomButton(
-                      text: "Back to Home",
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      icon: Icons.arrow_back,
-                      buttonColor: Theme.of(context).primaryColor,
-                    ),
-                  const SizedBox(height: 20),
-                ],
+                    const SizedBox(height: 20),
+                    if (_isEditing)
+                      Column(
+                        children: [
+                          CustomButton(
+                            text: "Save Changes",
+                            onPressed: _isSaving ? null : _updateUserProfile,
+                            isLoading: _isSaving,
+                            icon: Icons.save,
+                          ),
+                          const SizedBox(height: 15),
+                          CustomButton(
+                            text: "Cancel",
+                            onPressed: _isSaving ? null : _toggleEditMode,
+                            buttonColor: Colors.grey.shade600,
+                            icon: Icons.cancel,
+                          ),
+                        ],
+                      )
+                    else
+                      CustomButton(
+                        text: "Back to Home",
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        icon: Icons.arrow_back,
+                        buttonColor: Theme.of(context).primaryColor,
+                      ),
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
-            ),
     );
   }
 }

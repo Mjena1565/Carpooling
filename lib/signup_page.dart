@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_database/firebase_database.dart'; 
+import 'package:firebase_database/firebase_database.dart';
 
 import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
@@ -25,7 +25,8 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -43,31 +44,35 @@ class _SignupScreenState extends State<SignupScreen> {
     _confirmPasswordController.dispose();
     super.dispose();
   }
+
   Future<bool> _isEmployeeIdUnique(String employeeId) async {
-   try {
-     final namedDb = FirebaseFirestore.instanceFor(
-     app: Firebase.app(),
-     databaseId: 'carpool',
-    );
-    final querySnapshot = await namedDb.collection('users')
-      .where('employeeId', isEqualTo: employeeId)
-      .limit(1)
-      .get();
+    try {
+      final namedDb = FirebaseFirestore.instanceFor(
+        app: Firebase.app(),
+        databaseId: '(default)',
+      );
+      final querySnapshot =
+          await namedDb
+              .collection('users')
+              .where('employeeId', isEqualTo: employeeId)
+              .limit(1)
+              .get();
       return querySnapshot.docs.isEmpty;
     } catch (e) {
       print('Error checking employee ID uniqueness: $e');
-      return false; 
+      return false;
     }
   }
+
   Future<void> _signup() async {
-    print('--- _signup function called ---'); 
+    print('--- _signup function called ---');
 
     if (!_formKey.currentState!.validate()) {
       setState(() {
         _errorMessage = "Please correct the errors in the form.";
         _isLoading = false;
       });
-      print('--- Form validation failed ---'); 
+      print('--- Form validation failed ---');
       return;
     }
 
@@ -80,55 +85,58 @@ class _SignupScreenState extends State<SignupScreen> {
     final String password = _passwordController.text.trim();
     final String employeeId = _employeeIdController.text.trim();
 
-   // Check for employee ID uniqueness BEFORE creating the user
-     final isUnique = await _isEmployeeIdUnique(employeeId);
-     if (!isUnique) {
-       setState(() {
-       _errorMessage = 'The Employee ID is already in use. Please use a different one.';
-       _isLoading = false;
-       });
-       return;
-     }
+    // Check for employee ID uniqueness BEFORE creating the user
+    final isUnique = await _isEmployeeIdUnique(employeeId);
+    if (!isUnique) {
+      setState(() {
+        _errorMessage =
+            'The Employee ID is already in use. Please use a different one.';
+        _isLoading = false;
+      });
+      return;
+    }
     try {
-      print('--- Attempting to create user with email: $email ---'); 
+      print('--- Attempting to create user with email: $email ---');
       // 1. Create the user in Firebase Authentication
-      final userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      final userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
 
-      print('--- User created successfully! UID: ${userCredential.user?.uid} ---'); 
+      print(
+        '--- User created successfully! UID: ${userCredential.user?.uid} ---',
+      );
 
       final user = userCredential.user;
       if (user != null) {
         // 2. Save the additional user data to Firestore
         var namedDb = FirebaseFirestore.instanceFor(
           app: Firebase.app(),
-          databaseId: 'carpool',
+          databaseId: '(default)',
         );
-        print('--- Saving additional user data to Firestore for UID: ${user.uid} ---'); 
+        print(
+          '--- Saving additional user data to Firestore for UID: ${user.uid} ---',
+        );
         await namedDb.collection('users').doc(user.uid).set({
-        'name': _nameController.text.trim(),
-        'email': email,
-        'employeeId': _employeeIdController.text.trim(),
-        'phone': _phoneController.text.trim(),
-        'address': _addressController.text.trim(),
-        'createdAt': FieldValue.serverTimestamp(),
+          'name': _nameController.text.trim(),
+          'email': email,
+          'employeeId': _employeeIdController.text.trim(),
+          'phone': _phoneController.text.trim(),
+          'address': _addressController.text.trim(),
+          'createdAt': FieldValue.serverTimestamp(),
         });
         print('--- User data saved to Firestore successfully ---');
-        
-        await user.sendEmailVerification(); 
-        print('--- Verification email sent ---'); 
+
+        await user.sendEmailVerification();
+        print('--- Verification email sent ---');
       }
 
       if (!mounted) return;
       //  for now no navigation to emailVerifciationScreen
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const EmailVerificationScreen()),
+        MaterialPageRoute(
+          builder: (context) => const EmailVerificationScreen(),
+        ),
       );
-     
-
     } on FirebaseAuthException catch (e) {
       String message;
       switch (e.code) {
@@ -136,28 +144,30 @@ class _SignupScreenState extends State<SignupScreen> {
           message = 'The email address is already in use by another account.';
           break;
         case 'weak-password':
-          message = 'The password provided is too weak. Please choose a stronger one.';
+          message =
+              'The password provided is too weak. Please choose a stronger one.';
           break;
         case 'invalid-email':
           message = 'The email address is not valid.';
           break;
         default:
-          message = 'An unknown authentication error occurred. Please try again.';
+          message =
+              'An unknown authentication error occurred. Please try again.';
       }
       setState(() {
         _errorMessage = message;
       });
-      print('--- FirebaseAuthException: ${e.code} - ${e.message} ---'); 
+      print('--- FirebaseAuthException: ${e.code} - ${e.message} ---');
     } catch (e) {
       setState(() {
         _errorMessage = 'An unexpected error occurred: $e';
       });
-      print('--- Caught generic exception: $e ---'); 
+      print('--- Caught generic exception: $e ---');
     } finally {
       setState(() {
         _isLoading = false;
       });
-      print('--- Signup process finished ---'); 
+      print('--- Signup process finished ---');
     }
   }
 
@@ -183,17 +193,17 @@ class _SignupScreenState extends State<SignupScreen> {
                 "Create Your Account",
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).primaryColor,
-                    ),
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).primaryColor,
+                ),
               ),
               const SizedBox(height: 10),
               Text(
                 "Join us and manage your employee data seamlessly.",
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(color: Colors.grey[600]),
               ),
               const SizedBox(height: 40),
               CustomTextField(
@@ -277,7 +287,9 @@ class _SignupScreenState extends State<SignupScreen> {
                 hintText: "Minimum 8 characters",
                 suffixIcon: IconButton(
                   icon: Icon(
-                    _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                    _isPasswordVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off,
                     color: Colors.grey,
                   ),
                   onPressed: () {
@@ -304,7 +316,9 @@ class _SignupScreenState extends State<SignupScreen> {
                 hintText: "Re-enter your password",
                 suffixIcon: IconButton(
                   icon: Icon(
-                    _isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                    _isConfirmPasswordVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off,
                     color: Colors.grey,
                   ),
                   onPressed: () {
@@ -338,12 +352,19 @@ class _SignupScreenState extends State<SignupScreen> {
                       padding: const EdgeInsets.all(16.0),
                       child: Row(
                         children: [
-                          const Icon(Icons.error_outline, color: Colors.red, size: 24),
+                          const Icon(
+                            Icons.error_outline,
+                            color: Colors.red,
+                            size: 24,
+                          ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               _errorMessage!,
-                              style: const TextStyle(color: Colors.red, fontSize: 14),
+                              style: const TextStyle(
+                                color: Colors.red,
+                                fontSize: 14,
+                              ),
                               textAlign: TextAlign.left,
                             ),
                           ),

@@ -21,19 +21,23 @@ class DriverService {
     try {
       debugPrint('[DriverService] Initializing Firebase...');
       final app = Firebase.app();
-      _db = FirebaseFirestore.instanceFor(app: app,  databaseId: 'carpool' );
+      _db = FirebaseFirestore.instanceFor(app: app, databaseId: '(default)');
       _auth = FirebaseAuth.instanceFor(app: app);
       _db.settings = const Settings(persistenceEnabled: true);
-      
+
       if (__initial_auth_token.isNotEmpty) {
         debugPrint('[DriverService] Signing in with custom token...');
         _auth.signInWithCustomToken(__initial_auth_token).then((_) {
-          debugPrint('[DriverService] Signed in as user: ${_auth.currentUser?.uid}');
+          debugPrint(
+            '[DriverService] Signed in as user: ${_auth.currentUser?.uid}',
+          );
         });
       } else {
         debugPrint('[DriverService] Signing in anonymously...');
         _auth.signInAnonymously().then((_) {
-          debugPrint('[DriverService] Signed in as anonymous user: ${_auth.currentUser?.uid}');
+          debugPrint(
+            '[DriverService] Signed in as anonymous user: ${_auth.currentUser?.uid}',
+          );
         });
       }
     } catch (e) {
@@ -46,47 +50,67 @@ class DriverService {
   String get _driverProfilesCollectionPath {
     final user = _auth.currentUser;
     if (user == null) {
-      debugPrint('[DriverService] ERROR: User not authenticated for private data access.');
+      debugPrint(
+        '[DriverService] ERROR: User not authenticated for private data access.',
+      );
       throw Exception('User not authenticated for private data access.');
     }
     final path = '/users/${user.uid}/driverProfiles';
     debugPrint('[DriverService] Generated driver profiles path: $path');
     return path;
   }
-  
+
   String get _driverOffersCollectionPath => '/driverOffers';
 
-  Future<DocumentReference> createDriverProfile(Map<String, dynamic> profileData) async {
+  Future<DocumentReference> createDriverProfile(
+    Map<String, dynamic> profileData,
+  ) async {
     final user = _auth.currentUser;
     if (user == null) {
       throw Exception('User not authenticated.');
     }
 
     debugPrint('[DriverService] Checking for existing driver profiles...');
-    final existingProfiles = await _db.collection(_driverProfilesCollectionPath).get();
+    final existingProfiles =
+        await _db.collection(_driverProfilesCollectionPath).get();
     if (existingProfiles.docs.length >= 3) {
-      debugPrint('[DriverService] Profile creation failed. User already has 3 profiles.');
-      throw Exception('You have reached the maximum limit of 3 driver profiles.');
+      debugPrint(
+        '[DriverService] Profile creation failed. User already has 3 profiles.',
+      );
+      throw Exception(
+        'You have reached the maximum limit of 3 driver profiles.',
+      );
     }
-    debugPrint('[DriverService] User has ${existingProfiles.docs.length} profiles. Proceeding with creation.');
+    debugPrint(
+      '[DriverService] User has ${existingProfiles.docs.length} profiles. Proceeding with creation.',
+    );
 
     profileData['createdAt'] = FieldValue.serverTimestamp();
     return await _db.collection(_driverProfilesCollectionPath).add(profileData);
   }
 
   Future<DocumentSnapshot> getDriverProfileById(String profileId) async {
-    return await _db.collection(_driverProfilesCollectionPath).doc(profileId).get();
+    return await _db
+        .collection(_driverProfilesCollectionPath)
+        .doc(profileId)
+        .get();
   }
 
   Future<List<Map<String, dynamic>>> getDriverProfiles() async {
     debugPrint('[DriverService] Attempting to get driver profiles...');
     try {
-      final querySnapshot = await _db.collection(_driverProfilesCollectionPath).get();
-      debugPrint('[DriverService] Query successful. Found ${querySnapshot.docs.length} documents.');
-      final profiles = querySnapshot.docs.map((doc) {
-        return {'id': doc.id, ...doc.data()};
-      }).toList();
-      debugPrint('[DriverService] Successfully mapped ${profiles.length} profiles.');
+      final querySnapshot =
+          await _db.collection(_driverProfilesCollectionPath).get();
+      debugPrint(
+        '[DriverService] Query successful. Found ${querySnapshot.docs.length} documents.',
+      );
+      final profiles =
+          querySnapshot.docs.map((doc) {
+            return {'id': doc.id, ...doc.data()};
+          }).toList();
+      debugPrint(
+        '[DriverService] Successfully mapped ${profiles.length} profiles.',
+      );
       return profiles;
     } catch (e) {
       debugPrint('[DriverService] FAILED to get driver profiles: $e');
@@ -94,15 +118,23 @@ class DriverService {
     }
   }
 
-  Future<void> updateDriverProfile(String profileId, Map<String, dynamic> data) async {
-    await _db.collection(_driverProfilesCollectionPath).doc(profileId).update(data);
+  Future<void> updateDriverProfile(
+    String profileId,
+    Map<String, dynamic> data,
+  ) async {
+    await _db
+        .collection(_driverProfilesCollectionPath)
+        .doc(profileId)
+        .update(data);
   }
 
   Future<void> deleteDriverProfile(String profileId) async {
     await _db.collection(_driverProfilesCollectionPath).doc(profileId).delete();
   }
 
-  Future<Map<String, dynamic>> createDriverOffer(Map<String, dynamic> offerData) async {
+  Future<Map<String, dynamic>> createDriverOffer(
+    Map<String, dynamic> offerData,
+  ) async {
     final user = _auth.currentUser;
     if (user == null) {
       throw Exception('User not authenticated.');
@@ -113,12 +145,15 @@ class DriverService {
       'createdAt': FieldValue.serverTimestamp(),
     };
 
-    final DocumentReference docRef = await _db.collection(_driverOffersCollectionPath).add(data);
+    final DocumentReference docRef = await _db
+        .collection(_driverOffersCollectionPath)
+        .add(data);
     final DocumentSnapshot docSnapshot = await docRef.get();
-    final Map<String, dynamic> newOfferData = docSnapshot.data() as Map<String, dynamic>;
-    newOfferData['id'] = docSnapshot.id; 
+    final Map<String, dynamic> newOfferData =
+        docSnapshot.data() as Map<String, dynamic>;
+    newOfferData['id'] = docSnapshot.id;
 
-    return newOfferData; 
+    return newOfferData;
   }
 
   Stream<DocumentSnapshot?> getActiveDriverOfferStream() {
@@ -131,7 +166,9 @@ class DriverService {
         .where('userId', isEqualTo: user.uid)
         .where('status', isEqualTo: "active")
         .snapshots()
-        .map((snapshot) => snapshot.docs.isNotEmpty ? snapshot.docs.first : null);
+        .map(
+          (snapshot) => snapshot.docs.isNotEmpty ? snapshot.docs.first : null,
+        );
   }
 
   Stream<List<Map<String, dynamic>>> getMyDriverOffersStream() {
@@ -139,23 +176,37 @@ class DriverService {
     if (user == null) {
       return Stream.value([]);
     }
-    return _db.collection(_driverOffersCollectionPath).where('userId', isEqualTo: user.uid).snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return {'id': doc.id, ...doc.data()};
-      }).toList();
-    });
-  }
-  
-  Stream<Map<String, dynamic>?> getDriverOfferStream(String offerId) {
-    return _db.collection(_driverOffersCollectionPath).doc(offerId).snapshots().map((snapshot) {
-      if (snapshot.exists) {
-        return {'id': snapshot.id, ...snapshot.data() as Map<String, dynamic>};
-      }
-      return null;
-    });
+    return _db
+        .collection(_driverOffersCollectionPath)
+        .where('userId', isEqualTo: user.uid)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs.map((doc) {
+            return {'id': doc.id, ...doc.data()};
+          }).toList();
+        });
   }
 
-  Future<void> updateDriverOffer(String offerId, Map<String, dynamic> data) async {
+  Stream<Map<String, dynamic>?> getDriverOfferStream(String offerId) {
+    return _db
+        .collection(_driverOffersCollectionPath)
+        .doc(offerId)
+        .snapshots()
+        .map((snapshot) {
+          if (snapshot.exists) {
+            return {
+              'id': snapshot.id,
+              ...snapshot.data() as Map<String, dynamic>,
+            };
+          }
+          return null;
+        });
+  }
+
+  Future<void> updateDriverOffer(
+    String offerId,
+    Map<String, dynamic> data,
+  ) async {
     await _db.collection(_driverOffersCollectionPath).doc(offerId).update(data);
   }
 
@@ -163,11 +214,21 @@ class DriverService {
     await _db.collection(_driverOffersCollectionPath).doc(offerId).delete();
   }
 
-  Future<List<Map<String, dynamic>>> findMatchingRiders(Map<String, dynamic> offerDetails) async {
+  Future<List<Map<String, dynamic>>> findMatchingRiders(
+    Map<String, dynamic> offerDetails,
+  ) async {
     // This is a dummy method. Real-time matching logic would go here.
     return [
-      {'name': 'Dummy Rider 1', 'location': 'Some Dummy Location', 'destination': 'Dummy Office'},
-      {'name': 'Dummy Rider 2', 'location': 'Another Dummy Location', 'destination': 'Dummy Office'},
+      {
+        'name': 'Dummy Rider 1',
+        'location': 'Some Dummy Location',
+        'destination': 'Dummy Office',
+      },
+      {
+        'name': 'Dummy Rider 2',
+        'location': 'Another Dummy Location',
+        'destination': 'Dummy Office',
+      },
     ];
   }
 }

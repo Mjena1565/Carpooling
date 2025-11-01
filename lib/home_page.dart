@@ -14,7 +14,7 @@ import 'change_password_screen.dart';
 // Get a named instance of Firestore
 final FirebaseFirestore carpoolingFirestore = FirebaseFirestore.instanceFor(
   app: Firebase.app(),
-  databaseId: 'carpool',
+  databaseId: '(default)',
 );
 
 class HomeScreen extends StatefulWidget {
@@ -24,7 +24,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   String _userDisplayName = 'Guest';
   String _userEmpId = 'Loading...';
   Map<String, dynamic> _userStats = {
@@ -39,7 +40,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
-    print('DEBUG: HomeScreen initState called. Fetching user profile and stats...');
+    print(
+      'DEBUG: HomeScreen initState called. Fetching user profile and stats...',
+    );
     _fetchUserProfileAndStats(); // Initial fetch upon screen creation
     _tabController = TabController(length: 3, vsync: this);
   }
@@ -66,7 +69,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         if (docSnapshot.exists && docSnapshot.data() != null) {
           final data = docSnapshot.data() as Map<String, dynamic>;
           setState(() {
-            _userDisplayName = data['name'] ?? user.email?.split('@')[0] ?? 'JLR User';
+            _userDisplayName =
+                data['name'] ?? user.email?.split('@')[0] ?? 'JLR User';
             _userEmpId = data['employeeId'] ?? 'N/A';
             _userStats = {
               'rides_offered': data['rides_offered'] ?? 0,
@@ -101,7 +105,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         _userDisplayName = 'Guest';
         _userEmpId = 'N/A';
       });
-      print('DEBUG: No authenticated user found. Setting display name to Guest.');
+      print(
+        'DEBUG: No authenticated user found. Setting display name to Guest.',
+      );
     }
 
     setState(() {
@@ -140,7 +146,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           indicatorColor: Colors.white,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
-          labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          labelStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
           unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal),
           tabs: const [
             Tab(text: 'Home', icon: Icon(Icons.home)),
@@ -164,10 +173,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ),
               accountEmail: Text(
                 'Emp ID: $_userEmpId',
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                ),
+                style: const TextStyle(color: Colors.white70, fontSize: 14),
               ),
               currentAccountPicture: CircleAvatar(
                 backgroundColor: Colors.white,
@@ -177,41 +183,57 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   color: Theme.of(context).primaryColor,
                 ),
               ),
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-              ),
+              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
             ),
             // Main Navigation Items
             ListTile(
-              leading: Icon(Icons.home_outlined, color: Theme.of(context).colorScheme.primary),
+              leading: Icon(
+                Icons.home_outlined,
+                color: Theme.of(context).colorScheme.primary,
+              ),
               title: const Text('Home Dashboard'),
               onTap: () {
-                print('DEBUG: Tapped "Home Dashboard". Navigating to Home tab.');
+                print(
+                  'DEBUG: Tapped "Home Dashboard". Navigating to Home tab.',
+                );
                 Navigator.pop(context);
                 _tabController.animateTo(0);
               },
             ),
             ListTile(
-              leading: Icon(Icons.info_outline, color: Theme.of(context).colorScheme.primary),
+              leading: Icon(
+                Icons.info_outline,
+                color: Theme.of(context).colorScheme.primary,
+              ),
               title: const Text('About This App'),
               onTap: () {
-                print('DEBUG: Tapped "About This App". Navigating to About tab.');
+                print(
+                  'DEBUG: Tapped "About This App". Navigating to About tab.',
+                );
                 Navigator.pop(context);
                 _tabController.animateTo(1);
               },
             ),
             ListTile(
-              leading: Icon(Icons.lightbulb_outline, color: Theme.of(context).colorScheme.primary),
+              leading: Icon(
+                Icons.lightbulb_outline,
+                color: Theme.of(context).colorScheme.primary,
+              ),
               title: const Text('Features & Benefits'),
               onTap: () {
-                print('DEBUG: Tapped "Features & Benefits". Navigating to Features tab.');
+                print(
+                  'DEBUG: Tapped "Features & Benefits". Navigating to Features tab.',
+                );
                 Navigator.pop(context);
                 _tabController.animateTo(2);
               },
             ),
             const Divider(),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
               child: Text(
                 'Account Settings',
                 style: TextStyle(
@@ -222,33 +244,56 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ),
             ),
             ListTile(
-              leading: Icon(Icons.person_outline, color: Theme.of(context).colorScheme.secondary),
+              leading: Icon(
+                Icons.person_outline,
+                color: Theme.of(context).colorScheme.secondary,
+              ),
               title: const Text('Manage Profile'),
               onTap: () async {
-                print('DEBUG: Tapped "Manage Profile". Navigating to ProfilePage. Awaiting return...');
+                print(
+                  'DEBUG: Tapped "Manage Profile". Navigating to ProfilePage. Awaiting return...',
+                );
                 Navigator.pop(context); // Close the drawer
                 await Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const ProfilePage()),
                 );
                 // No automatic refresh here. User will pull to refresh or re-open the app.
-                print('DEBUG: Returned from ProfilePage. No automatic refresh triggered.');
+                print(
+                  'DEBUG: Returned from ProfilePage. No automatic refresh triggered.',
+                );
               },
             ),
             ListTile(
-              leading: Icon(Icons.lock_reset, color: Theme.of(context).colorScheme.secondary),
+              leading: Icon(
+                Icons.lock_reset,
+                color: Theme.of(context).colorScheme.secondary,
+              ),
               title: const Text('Change Password'),
               onTap: () {
-                print('DEBUG: Tapped "Change Password". Navigating to ChangePasswordScreen.');
+                print(
+                  'DEBUG: Tapped "Change Password". Navigating to ChangePasswordScreen.',
+                );
                 Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const ChangePasswordScreen()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const ChangePasswordScreen(),
+                  ),
+                );
               },
             ),
             const Divider(),
             // Logout Button
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.redAccent),
-              title: const Text('Log Out', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w500)),
+              title: const Text(
+                'Log Out',
+                style: TextStyle(
+                  color: Colors.redAccent,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
               onTap: () {
                 print('DEBUG: Log Out button pressed.');
                 Navigator.pop(context);
@@ -282,13 +327,18 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         children: [
           Card(
             elevation: 8,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
             child: Container(
               padding: const EdgeInsets.all(25.0),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15),
                 gradient: LinearGradient(
-                  colors: [Theme.of(context).colorScheme.primary.withOpacity(0.9), Theme.of(context).colorScheme.primary],
+                  colors: [
+                    Theme.of(context).colorScheme.primary.withOpacity(0.9),
+                    Theme.of(context).colorScheme.primary,
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -337,8 +387,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             title: 'Offer Ride',
             subtitle: 'As a Driver, share your commute and help colleagues.',
             onTap: () {
-              print('DEBUG: Tapped "Offer Ride". Navigating to RideDriverInputScreen.');
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const RideDriverInputScreen()));
+              print(
+                'DEBUG: Tapped "Offer Ride". Navigating to RideDriverInputScreen.',
+              );
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const RideDriverInputScreen(),
+                ),
+              );
             },
           ),
           const SizedBox(height: 20),
@@ -347,10 +404,18 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             icon: Icons.person_add,
             iconColor: Colors.orange.shade600,
             title: 'Request Ride',
-            subtitle: 'As a Companion, find a ride and reach your destination comfortably.',
+            subtitle:
+                'As a Companion, find a ride and reach your destination comfortably.',
             onTap: () {
-              print('DEBUG: Tapped "Request Ride". Navigating to RideCompanionInputScreen.');
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const RideCompanionInputScreen()));
+              print(
+                'DEBUG: Tapped "Request Ride". Navigating to RideCompanionInputScreen.',
+              );
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const RideCompanionInputScreen(),
+                ),
+              );
             },
           ),
           const SizedBox(height: 30),
@@ -367,11 +432,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           _isLoading
               ? const Center(child: CircularProgressIndicator())
               : _buildStatGrid(
-            ridesOffered: _userStats['rides_offered'].toString(),
-            ridesTaken: _userStats['rides_taken'].toString(),
-            co2Saved: _userStats['co2_saved'].toStringAsFixed(1),
-            rating: _userStats['rating'].toStringAsFixed(1),
-          ),
+                ridesOffered: _userStats['rides_offered'].toString(),
+                ridesTaken: _userStats['rides_taken'].toString(),
+                co2Saved: _userStats['co2_saved'].toStringAsFixed(1),
+                rating: _userStats['rating'].toStringAsFixed(1),
+              ),
           const SizedBox(height: 20),
         ],
       ),
@@ -392,15 +457,45 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       children: [
-        _buildStatCard(context, Icons.car_rental, 'Rides Offered', ridesOffered, Colors.blue.shade400),
-        _buildStatCard(context, Icons.groups, 'Rides Taken', ridesTaken, Colors.purple.shade400),
-        _buildStatCard(context, Icons.cloud_done, 'CO2 Saved (kg)', co2Saved, Colors.green.shade400),
-        _buildStatCard(context, Icons.star, 'Rating', rating, Colors.amber.shade400),
+        _buildStatCard(
+          context,
+          Icons.car_rental,
+          'Rides Offered',
+          ridesOffered,
+          Colors.blue.shade400,
+        ),
+        _buildStatCard(
+          context,
+          Icons.groups,
+          'Rides Taken',
+          ridesTaken,
+          Colors.purple.shade400,
+        ),
+        _buildStatCard(
+          context,
+          Icons.cloud_done,
+          'CO2 Saved (kg)',
+          co2Saved,
+          Colors.green.shade400,
+        ),
+        _buildStatCard(
+          context,
+          Icons.star,
+          'Rating',
+          rating,
+          Colors.amber.shade400,
+        ),
       ],
     );
   }
 
-  Widget _buildStatCard(BuildContext context, IconData icon, String title, String value, Color color) {
+  Widget _buildStatCard(
+    BuildContext context,
+    IconData icon,
+    String title,
+    String value,
+    Color color,
+  ) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -440,13 +535,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   Widget _buildActionCard(
-      BuildContext context, {
-        required IconData icon,
-        required Color iconColor,
-        required String title,
-        required String subtitle,
-        VoidCallback? onTap,
-      }) {
+    BuildContext context, {
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    VoidCallback? onTap,
+  }) {
     return Card(
       elevation: 6,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
@@ -522,7 +617,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             icon: Icons.flag_outlined,
             iconColor: Colors.purple.shade600,
             title: "Our Mission",
-            description: "To revolutionize daily commutes by fostering a sustainable, efficient, and community-driven carpooling experience for everyone at JLR.",
+            description:
+                "To revolutionize daily commutes by fostering a sustainable, efficient, and community-driven carpooling experience for everyone at JLR.",
           ),
           const SizedBox(height: 20),
           _buildAboutSectionCard(
@@ -530,12 +626,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             icon: Icons.visibility_outlined,
             iconColor: Colors.blue.shade600,
             title: "Our Vision",
-            description: "To build a future where carpooling is the preferred choice, significantly reducing traffic congestion, minimizing carbon emissions, and enhancing connectivity among colleagues.",
+            description:
+                "To build a future where carpooling is the preferred choice, significantly reducing traffic congestion, minimizing carbon emissions, and enhancing connectivity among colleagues.",
           ),
           const SizedBox(height: 20),
           Card(
             elevation: 4,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
@@ -627,7 +726,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           const SizedBox(height: 30),
           Text(
             "Join us in driving change, one shared ride at a time. Together, we can make a difference!",
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontStyle: FontStyle.italic, color: Colors.grey.shade700),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontStyle: FontStyle.italic,
+              color: Colors.grey.shade700,
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -699,7 +801,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     icon: Icons.eco,
                     iconColor: Colors.green,
                     title: "Eco Commutes",
-                    description: "Reduce your carbon footprint by sharing rides.",
+                    description:
+                        "Reduce your carbon footprint by sharing rides.",
                     onTap: () {
                       print('DEBUG: Tapped on "Eco Commutes" feature.');
                     },
@@ -709,7 +812,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     icon: Icons.access_time,
                     iconColor: Colors.deepOrange,
                     title: "Time Efficiency",
-                    description: "Streamlined processes for quick ride coordination.",
+                    description:
+                        "Streamlined processes for quick ride coordination.",
                     onTap: () {
                       print('DEBUG: Tapped on "Time Efficiency" feature.');
                     },
@@ -719,7 +823,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     icon: Icons.security,
                     iconColor: Colors.blueGrey,
                     title: "Secure & Safe",
-                    description: "Ensuring a safe and reliable carpooling environment.",
+                    description:
+                        "Ensuring a safe and reliable carpooling environment.",
                     onTap: () {
                       print('DEBUG: Tapped on "Secure & Safe" feature.');
                     },
@@ -729,7 +834,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     icon: Icons.chat,
                     iconColor: Theme.of(context).colorScheme.secondary,
                     title: "In-App Chat",
-                    description: "Communicate seamlessly with your ride partners.",
+                    description:
+                        "Communicate seamlessly with your ride partners.",
                     onTap: () {
                       print('DEBUG: Tapped on "In-App Chat" feature.');
                     },
@@ -741,7 +847,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           const SizedBox(height: 30),
           Text(
             "And many more features are being developed to make your JLR carpooling experience truly exceptional!",
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontStyle: FontStyle.italic, color: Colors.grey.shade700),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontStyle: FontStyle.italic,
+              color: Colors.grey.shade700,
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -750,13 +859,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   Widget _buildInfoCard(
-      BuildContext context, {
-        required String title,
-        required String subTitle,
-        required List<Widget> content,
-        required IconData icon,
-        required Color iconColor,
-      }) {
+    BuildContext context, {
+    required String title,
+    required String subTitle,
+    required List<Widget> content,
+    required IconData icon,
+    required Color iconColor,
+  }) {
     return Card(
       elevation: 6,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
@@ -765,11 +874,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size: 70,
-              color: iconColor,
-            ),
+            Icon(icon, size: 70, color: iconColor),
             const SizedBox(height: 20),
             Text(
               title,
@@ -805,10 +910,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     text.splitMapJoin(
       exp,
       onMatch: (m) {
-        spans.add(TextSpan(
-          text: m.group(1),
-          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
-        ));
+        spans.add(
+          TextSpan(
+            text: m.group(1),
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+        );
         return '';
       },
       onNonMatch: (n) {
@@ -824,13 +934,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 4.0),
-            child: Icon(Icons.check_circle_outline, size: 22, color: Theme.of(context).colorScheme.secondary),
+            child: Icon(
+              Icons.check_circle_outline,
+              size: 22,
+              color: Theme.of(context).colorScheme.secondary,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: RichText(
               text: TextSpan(
-                style: DefaultTextStyle.of(context).style.copyWith(fontSize: 16, height: 1.5, color: Colors.black87),
+                style: DefaultTextStyle.of(context).style.copyWith(
+                  fontSize: 16,
+                  height: 1.5,
+                  color: Colors.black87,
+                ),
                 children: spans,
               ),
               textAlign: TextAlign.left,
@@ -848,8 +966,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           width: double.infinity,
           child: ElevatedButton.icon(
             onPressed: () {
-              print('DEBUG: Tapped "Offer Ride (Driver)" button from home page.');
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const RideDriverInputScreen()));
+              print(
+                'DEBUG: Tapped "Offer Ride (Driver)" button from home page.',
+              );
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const RideDriverInputScreen(),
+                ),
+              );
             },
             icon: const Icon(Icons.directions_car, size: 28),
             label: const Padding(
@@ -862,7 +987,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green.shade600,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               elevation: 5,
               padding: const EdgeInsets.symmetric(horizontal: 20),
             ),
@@ -873,8 +1000,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           width: double.infinity,
           child: ElevatedButton.icon(
             onPressed: () {
-              print('DEBUG: Tapped "Request Ride (Companion)" button from home page.');
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const RideCompanionInputScreen()));
+              print(
+                'DEBUG: Tapped "Request Ride (Companion)" button from home page.',
+              );
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const RideCompanionInputScreen(),
+                ),
+              );
             },
             icon: const Icon(Icons.person_add, size: 28),
             label: const Padding(
@@ -887,7 +1021,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.orange.shade600,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               elevation: 5,
               padding: const EdgeInsets.symmetric(horizontal: 20),
             ),
@@ -898,13 +1034,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   Widget _buildFeatureGridItem(
-      BuildContext context, {
-        required IconData icon,
-        required Color iconColor,
-        required String title,
-        required String description,
-        VoidCallback? onTap,
-      }) {
+    BuildContext context, {
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String description,
+    VoidCallback? onTap,
+  }) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -917,11 +1053,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                size: 48,
-                color: iconColor,
-              ),
+              Icon(icon, size: 48, color: iconColor),
               const SizedBox(height: 10),
               Text(
                 title,
@@ -936,10 +1068,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               Text(
                 description,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey.shade700,
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -951,12 +1080,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   Widget _buildAboutSectionCard(
-      BuildContext context, {
-        required IconData icon,
-        required Color iconColor,
-        required String title,
-        required String description,
-      }) {
+    BuildContext context, {
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String description,
+  }) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -964,11 +1093,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
-            Icon(
-              icon,
-              size: 48,
-              color: iconColor,
-            ),
+            Icon(icon, size: 48, color: iconColor),
             const SizedBox(height: 15),
             Text(
               title,

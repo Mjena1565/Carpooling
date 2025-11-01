@@ -27,7 +27,8 @@ class _RideDriverInputScreenState extends State<RideDriverInputScreen> with Sing
 
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _locationController = TextEditingController();
-  final TextEditingController _companionsOccupiedController = TextEditingController(text: '0');
+  // CHANGED: Renamed controller from _companionsOccupiedController to _availableSeatsController
+  final TextEditingController _availableSeatsController = TextEditingController(text: '0');
   bool _isOfficeDirection = true;
 
   bool _isLoading = false;
@@ -62,7 +63,8 @@ class _RideDriverInputScreenState extends State<RideDriverInputScreen> with Sing
     _tabController.removeListener(_handleTabSelection);
     _tabController.dispose();
     _locationController.dispose();
-    _companionsOccupiedController.dispose();
+    // CHANGED: Dispose of the renamed controller
+    _availableSeatsController.dispose();
     _activeOfferSubscription.cancel();
     super.dispose();
   }
@@ -110,7 +112,8 @@ class _RideDriverInputScreenState extends State<RideDriverInputScreen> with Sing
 
   void _clearForm() {
     _locationController.clear();
-    _companionsOccupiedController.text = '0';
+    // CHANGED: Use the renamed controller
+    _availableSeatsController.text = '0';
     setState(() {
       _isOfficeDirection = true;
       _selectedDate = null;
@@ -142,12 +145,13 @@ class _RideDriverInputScreenState extends State<RideDriverInputScreen> with Sing
     return null;
   }
 
-  String? _validateCompanionsOccupied(String? value) {
+  // CHANGED: Renamed and updated validator for available seats
+  String? _validateAvailableSeats(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Please enter the number of companions.';
+      return 'Please enter the number of available seats.';
     }
-    final int? companions = int.tryParse(value);
-    if (companions == null || companions < 0) {
+    final int? seats = int.tryParse(value);
+    if (seats == null || seats < 0) {
       return 'Please enter a valid non-negative number.';
     }
     return null;
@@ -393,7 +397,8 @@ class _RideDriverInputScreenState extends State<RideDriverInputScreen> with Sing
     }
 
     final String location = _locationController.text.trim();
-    final int? companionsOccupied = int.tryParse(_companionsOccupiedController.text.trim());
+    // CHANGED: Reading from the new available seats controller
+    final int? availableSeats = int.tryParse(_availableSeatsController.text.trim());
 
     String? scheduledTime;
     String activeStatus = 'waiting';
@@ -420,7 +425,8 @@ class _RideDriverInputScreenState extends State<RideDriverInputScreen> with Sing
       'driver_id': _selectedDriverId,
       'location': location,
       'office_direction': _isOfficeDirection,
-      'companions_occupied': companionsOccupied,
+
+      'available_seats': availableSeats,
       'status': activeStatus,
       'scheduled_time': scheduledTime,
       'latitude': _latitude,
@@ -841,12 +847,13 @@ class _RideDriverInputScreenState extends State<RideDriverInputScreen> with Sing
           ],
         ),
         const SizedBox(height: 20),
+        // CHANGED: Updated this field to capture Available Seats
         CustomTextField(
-          controller: _companionsOccupiedController,
-          label: 'Companions Occupied',
-          hintText: 'E.g., 2',
-          prefixIcon: const Icon(Icons.people),
-          validator: _validateCompanionsOccupied,
+          controller: _availableSeatsController,
+          label: 'Available Seats', // New Label
+          hintText: 'E.g., 2 or 3', // Updated Hint
+          prefixIcon: const Icon(Icons.event_seat), // New Icon
+          validator: _validateAvailableSeats, // Updated Validator
           keyboardType: TextInputType.number,
         ),
         const SizedBox(height: 20),
@@ -859,15 +866,15 @@ class _RideDriverInputScreenState extends State<RideDriverInputScreen> with Sing
               onChanged: _isLoading
                   ? null
                   : (bool value) {
-                      setState(() {
-                        _isRideLater = value;
-                        if (!value) {
-                          _selectedDate = null;
-                          _selectedTime = null;
-                          _errorMessage = null;
-                        }
-                      });
-                    },
+                        setState(() {
+                          _isRideLater = value;
+                          if (!value) {
+                            _selectedDate = null;
+                            _selectedTime = null;
+                            _errorMessage = null;
+                          }
+                        });
+                      },
             ),
           ],
         ),

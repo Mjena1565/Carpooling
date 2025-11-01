@@ -245,9 +245,9 @@ class _MyDriverOffersTabState extends State<MyDriverOffersTab> with AutomaticKee
                         _getDisplayTime(_activeDriverOffer!['scheduled_time'] ??
                             _activeDriverOffer!['created_at'])),
                     _buildInfoRow(
-                        Icons.group_outlined,
-                        'Companions Occupied:',
-                        (_activeDriverOffer!['companions_occupied']?.toString() ?? '0')),
+                        Icons.event_seat,
+                        'Available_seats:',
+                        (_activeDriverOffer!['available_seats']?.toString() ?? '0')),
                     const SizedBox(height: 16),
                     CustomButton(
                       text: "View Full Offer Details",
